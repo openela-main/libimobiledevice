@@ -1,6 +1,6 @@
 Name:          libimobiledevice
 Version:       1.2.0
-Release:       16%{?dist}
+Release:       18%{?dist}
 Summary:       Library for connecting to mobile devices
 
 Group:         System Environment/Libraries
@@ -14,6 +14,10 @@ Patch0:        344409e1d1ad917d377b256214c5411dda82e6b0...5a85432719fb3d18027d52
 # GNUTLS 3.6.0 bug fixes
 Patch1:        0001-userpref-GnuTLS-Fix-3.6.0-SHA1-compatibility.patch
 Patch2:        0002-userpref-GnuTLS-Use-valid-serial-for-3.6.0.patch
+# https://github.com/libimobiledevice/libimobiledevice/commit/ca85a1829c275635f7b2854887f6490dcb3c5e40
+Patch3:        libimobiledevice-1.2.0-CVE-2026-116260.patch
+# Fix double free introduced by the backport above
+Patch4:        libimobiledevice-1.2.0-afc-receive-error-double-free.patch
 
 BuildRequires: glib2-devel
 BuildRequires: gnutls-devel
@@ -91,6 +95,13 @@ find %{buildroot} -type f -name "*.la" -delete
 %{_includedir}/libimobiledevice/
 
 %changelog
+* Mon Nov 09 2026 Tomas Pelka <tpelka@redhat.com> - 1.2.0-18
+- Fix double free in afc_receive_data() when service_receive() fails
+
+* Mon Oct 26 2026 RHEL Packaging Agent <redhat-ymir-agent@redhat.com> - 1.2.0-17
+- CVE-2026-116260 libimobiledevice: libimobiledevice: Denial of Service via double free in service_receive
+  double free in service_receive
+
 * Thu Jun 07 2018 Bastien Nocera <bnocera@redhat.com> - 1.2.0-16
 + libimobiledevice-1.2.0-16
 - Remove python2 subpackage, it hasn't been generated since F21

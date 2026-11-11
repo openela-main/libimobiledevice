@@ -1,0 +1,33 @@
+From e5f585ebc8f7eeac87ffc879bb97cc63ce3a1687 Mon Sep 17 00:00:00 2001
+From: Tomas Pelka <tpelka@redhat.com>
+Date: Mon, 9 Nov 2026 10:31:23 +0100
+Subject: [PATCH] afc: Avoid double free when service_receive() fails
+
+When service_receive() returns an error and reports zero bytes received,
+the error branch frees dump_here but does not return, so the following
+zero-bytes branch frees it again. Return the error right after freeing.
+
+This also covers the partial-read-with-error case, where the short-read
+branch would free the same buffer a second time.
+
+Signed-off-by: Tomas Pelka <tpelka@redhat.com>
+Resolves: RHEL-291675
+---
+ src/afc.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/src/afc.c b/src/afc.c
+index dfc33ec..2b33a51 100644
+--- a/src/afc.c
++++ b/src/afc.c
+@@ -328,6 +328,7 @@ static afc_error_t afc_receive_data(afc_client_t client, char **bytes, uint32_t
+ 		if (err != AFC_E_SUCCESS) {
+ 			free(dump_here);
+ 			debug_info("Failed to receive data: %s (%d)", afc_strerror(err), err);
++			return err;
+ 		}
+ 		if (*bytes_recv <= 0) {
+ 			free(dump_here);
+-- 
+2.56.0
+
